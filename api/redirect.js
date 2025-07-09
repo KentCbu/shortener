@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-const BIN_ID = "YOUR_BIN_ID_HERE";
-const API_KEY = "YOUR_API_KEY_HERE";
+const BIN_ID = "686e1231dfff172fa657ed90";
+const API_KEY = "$2a$10$hMAe7sa9n3owoAS9NYMjUeizXEKs5k8wuNljsyVfGUuBXLLF1lz0G";
 
 exports.handler = async function(event) {
   const slug = event.path.replace("/", "");
