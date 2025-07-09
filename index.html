@@ -13,17 +13,22 @@
   <input type="text" id="longUrl" placeholder="Paste your long URL here">
   <button onclick="shorten()">Shorten</button>
   <div id="result"></div>
-  <script>
-    async function shorten() {
-      const longUrl = document.getElementById('longUrl').value;
-      const res = await fetch('/.netlify/functions/shorten', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: longUrl })
-      });
-      const data = await res.json();
-      document.getElementById('result').innerHTML = 'Short URL: <a href="' + data.shortUrl + '" target="_blank">' + data.shortUrl + '</a>';
-    }
-  </script>
+    <script>
+  async function shorten() {
+    const longUrl = document.getElementById('longUrl').value;
+    const res = await fetch('/.netlify/functions/shorten', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: longUrl })
+    });
+    const data = await res.json();
+    if (data.short) {
+      const shortUrl = window.location.origin + '/' + data.short;
+      document.getElementById('result').innerHTML = 'Short URL: <a href="' + shortUrl + '" target="_blank">' + shortUrl + '</a>';
+    } else {
+      document.getElementById('result').innerHTML = '❌ Error generating short link.';
+    }
+  }
+</script>
 </body>
 </html>
