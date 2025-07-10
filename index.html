@@ -10,14 +10,14 @@
   <!-- ✅ FIXED OG TAGS (FOR MAIN PAGE) -->
   <meta property="og:title" content="GoMoTV – URL Shortener for Movie Links">
   <meta property="og:description" content="Easily shorten and share movie & TV show links using GoMoTV.">
-  <meta property="og:image" content="https://watch-gomotv.online/preview.jpg"> <!-- REPLACE WITH YOUR ACTUAL IMAGE -->
+  <meta property="og:image" content="https://watch-gomotv.online/preview.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://watch-gomotv.online"> <!-- MAIN SITE URL -->
+  <meta property="og:url" content="https://watch-gomotv.online">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="GoMoTV">
   
-  <!-- ✅ TWITTER CARD (OPTIONAL BUT RECOMMENDED) -->
+  <!-- ✅ TWITTER CARD -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="GoMoTV – URL Shortener for Movie Links">
   <meta name="twitter:description" content="Easily shorten and share movie & TV show links using GoMoTV.">
@@ -38,36 +38,84 @@
       width: 80%; 
       border: 1px solid #ddd;
       border-radius: 4px;
+      font-size: 16px;
     }
     button {
       background-color: #4285f4;
       color: white;
       font-weight: bold;
       cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
     }
     #result {
       margin-top: 20px;
-      padding: 10px;
+      padding: 15px;
       word-break: break-all;
+      border-radius: 4px;
+    }
+    .error {
+      background-color: #ffebee;
+      color: #d32f2f;
+      border: 1px solid #ef9a9a;
+    }
+    .success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+    .loading {
+      color: #4285f4;
+    }
+    #copy-btn {
+      padding: 5px 10px;
+      margin-left: 10px;
+      width: auto;
+      font-size: 14px;
     }
   </style>
 </head>
 <body>
   <h2 style="color: #4285f4;">GOMOTV URL Shortener</h2>
-  <input type="text" id="longUrl" placeholder="Paste your movie/TV show link here">
-  <button onclick="shorten()">Shorten URL</button>
+  <input type="text" id="longUrl" placeholder="Paste your movie/TV show link here (include http:// or https://)">
+  <button id="shorten-btn" onclick="shorten()">Shorten URL</button>
   <div id="result"></div>
 
   <script>
     async function shorten() {
       const longUrl = document.getElementById('longUrl').value.trim();
+      const resultDiv = document.getElementById('result');
+      const shortenBtn = document.getElementById('shorten-btn');
+      
+      // Clear previous results
+      resultDiv.innerHTML = '';
+      resultDiv.className = '';
       
       if (!longUrl) {
-        document.getElementById('result').innerHTML = '❌ Please enter a URL';
+        resultDiv.innerHTML = '❌ Please enter a URL';
+        resultDiv.className = 'error';
+        return;
+      }
+
+      // Basic URL validation
+      if (!longUrl.startsWith('http://') && !longUrl.startsWith('https://')) {
+        resultDiv.innerHTML = '❌ URL must start with http:// or https://';
+        resultDiv.className = 'error';
         return;
       }
 
       try {
+        // Show loading state
+        shortenBtn.disabled = true;
+        resultDiv.innerHTML = '⏳ Processing...';
+        resultDiv.className = 'loading';
+
         const res = await fetch('/.netlify/functions/shorten', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -76,23 +124,52 @@
         
         const data = await res.json();
         
+        if (!res.ok) {
+          throw new Error(data.error || 'Failed to shorten URL');
+        }
+
         if (data.short) {
           const shortUrl = window.location.origin + '/' + data.short;
-          document.getElementById('result').innerHTML = `
-            <p>Short URL:</p>
-            <a href="${shortUrl}" target="_blank" style="color: #4285f4;">${shortUrl}</a>
-            <button onclick="navigator.clipboard.writeText('${shortUrl}')" 
-                    style="padding: 5px 10px; margin-left: 10px;">
-              Copy
-            </button>
+          resultDiv.innerHTML = `
+            <p>✅ Short URL created:</p>
+            <div style="margin: 15px 0;">
+              <a href="${shortUrl}" target="_blank" style="color: #4285f4; font-weight: bold;">${shortUrl}</a>
+              <button id="copy-btn" onclick="copyToClipboard('${shortUrl}')">Copy</button>
+            </div>
+            <small>This link will redirect to:<br>${longUrl}</small>
           `;
+          resultDiv.className = 'success';
         } else {
-          document.getElementById('result').innerHTML = '❌ Error: ' + (data.error || 'Failed to shorten URL');
+          throw new Error(data.error || 'No short URL generated');
         }
       } catch (error) {
-        document.getElementById('result').innerHTML = '❌ Network error. Please try again.';
+        console.error('Shorten error:', error);
+        resultDiv.innerHTML = `❌ Error: ${error.message}`;
+        resultDiv.className = 'error';
+      } finally {
+        shortenBtn.disabled = false;
       }
     }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = document.getElementById('copy-btn');
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+        }, 2000);
+      }).catch(err => {
+        console.error('Copy failed:', err);
+        alert('Failed to copy. Please try again.');
+      });
+    }
+
+    // Allow pressing Enter key to submit
+    document.getElementById('longUrl').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        shorten();
+      }
+    });
   </script>
 </body>
 </html>
