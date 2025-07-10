@@ -7,7 +7,7 @@ const API_KEY = "$2a$10$hMAe7sa9n3owoAS9NYMjUeizXEKs5k8wuNljsyVfGUuBXLLF1lz0G";
 const BASE_URL = "https://watch-gomotv.online";
 const MAX_SLUG_LENGTH = 10;
 const MAX_ATTEMPTS = 5;
-const SAFE_DOMAINS = ['gomotv.com', 'watch-gomotv.online']; // Allowed domains for shortening
+const SAFE_DOMAINS = [];
 
 exports.handler = async function(event) {
   // Validate request method
@@ -61,28 +61,6 @@ exports.handler = async function(event) {
       body: JSON.stringify({ 
         error: 'Invalid URL format',
         details: 'URL must start with http:// or https:// and be properly formatted'
-      })
-    };
-  }
-
-  // Validate URL domain
-  try {
-    const urlObj = new URL(originalUrl);
-    if (!SAFE_DOMAINS.some(domain => urlObj.hostname.endsWith(domain))) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ 
-          error: 'Unsupported domain',
-          details: 'We can only shorten URLs from specific domains'
-        })
-      };
-    }
-  } catch (err) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ 
-        error: 'Invalid URL',
-        details: 'The provided URL is malformed'
       })
     };
   }
