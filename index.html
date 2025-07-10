@@ -32,31 +32,80 @@
   <button onclick="shorten()">Shorten URL</button>
   <div id="result"></div>
   <script>
-    async function shorten() {
-      const longUrl = document.getElementById('longUrl').value.trim();
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML = '';
-      resultDiv.className = '';
-      if (!longUrl.startsWith('https://gomotv.pages.dev/')) {
-        resultDiv.innerHTML = '❌ Only GoMoTV links are allowed.';
-        resultDiv.className = 'error';
-        return;
-      }
-      try {
-        const res = await fetch('/.netlify/functions/shorten', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: longUrl })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        const shortUrl = window.location.origin + '/' + data.short;
-        resultDiv.innerHTML = '<div class="success">✅ Short URL created: <a href="' + shortUrl + '" target="_blank">' + shortUrl + '</a></div>';
-      } catch (e) {
-        resultDiv.innerHTML = '❌ ' + e.message;
-        resultDiv.className = 'error';
-      }
+  async function shorten() {
+    const longUrl = document.getElementById('longUrl').value.trim();
+    const resultDiv = document.getElementById('result');
+    const shortenBtn = document.getElementById('shorten-btn');
+
+    resultDiv.innerHTML = '';
+    resultDiv.className = '';
+
+    if (!longUrl) {
+      resultDiv.innerHTML = '❌ Please enter a URL';
+      resultDiv.className = 'error';
+      return;
     }
+
+    if (!longUrl.startsWith('https://gomotv.pages.dev/')) {
+      resultDiv.innerHTML = '❌ Only gomotv.pages.dev URLs are allowed';
+      resultDiv.className = 'error';
+      return;
+    }
+
+    try {
+      shortenBtn.disabled = true;
+      resultDiv.innerHTML = '⏳ Processing...';
+      resultDiv.className = 'loading';
+
+      const res = await fetch('/.netlify/functions/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: longUrl })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.short) {
+        throw new Error(data.error || 'Failed to shorten URL');
+      }
+
+      const shortUrl = `${window.location.origin}/${data.short}`;
+      resultDiv.className = 'success';
+      resultDiv.innerHTML = `
+        <p>✅ Short URL created:</p>
+        <div style="margin: 15px 0;">
+          <a href="${shortUrl}" target="_blank" style="color: #4285f4; font-weight: bold;">${shortUrl}</a>
+          <button id="copy-btn" onclick="copyToClipboard('${shortUrl}')">Copy</button>
+        </div>
+        <small>This will redirect to:<br>${longUrl}</small>
+      `;
+    } catch (error) {
+      console.error('Error:', error);
+      resultDiv.innerHTML = `❌ ${error.message}`;
+      resultDiv.className = 'error';
+    } finally {
+      shortenBtn.disabled = false;
+    }
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const copyBtn = document.getElementById('copy-btn');
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => {
+        copyBtn.textContent = 'Copy';
+      }, 2000);
+    }).catch(err => {
+      console.error('Copy failed:', err);
+      alert('Failed to copy. Please try manually.');
+    });
+  }
+
+  document.getElementById('longUrl').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      shorten();
+    }
+  });
   </script>
 </body>
 </html>
