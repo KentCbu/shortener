@@ -1,93 +1,178 @@
 <!DOCTYPE html>
-<html lang="en" prefix="og: http://ogp.me/ns#">
+<html prefix="og: http://ogp.me/ns#">
 <head>
   <meta charset="UTF-8">
   <title>GOMOTV URL Shortener</title>
+
+  <!-- ✅ ESSENTIAL META TAGS -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta property="og:title" content="Watch on GoMoTV">
-  <meta property="og:description" content="Click to watch your favorite content">
+  
+  <!-- ✅ FIXED OG TAGS (FOR MAIN PAGE) -->
+  <meta property="og:title" content="GoMoTV – URL Shortener for Movie Links">
+  <meta property="og:description" content="Easily shorten and share movie & TV show links using GoMoTV.">
   <meta property="og:image" content="https://watch-gomotv.online/preview.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:url" content="https://watch-gomotv.online">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="GoMoTV">
+  
+  <!-- ✅ TWITTER CARD -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Watch on GoMoTV">
-  <meta name="twitter:description" content="Click to watch your favorite content">
+  <meta name="twitter:title" content="GoMoTV – URL Shortener for Movie Links">
+  <meta name="twitter:description" content="Easily shorten and share movie & TV show links using GoMoTV.">
   <meta name="twitter:image" content="https://watch-gomotv.online/preview.jpg">
+
   <style>
-    body { font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; text-align: center; background-color: #f5f5f5; }
-    input, button { padding: 12px; margin: 10px; width: 80%; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
-    button { background-color: #4285f4; color: white; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
-    button:hover { background-color: #3367d6; }
-    #result { margin-top: 20px; padding: 15px; word-break: break-all; border-radius: 4px; }
-    .error { background-color: #ffebee; color: #d32f2f; border: 1px solid #ef9a9a; }
-    .success { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    body {  
+      font-family: 'Segoe UI', sans-serif;  
+      max-width: 500px;  
+      margin: 50px auto;  
+      padding: 20px;
+      text-align: center;  
+      background-color: #f5f5f5;
+    }
+    input, button {  
+      padding: 12px;  
+      margin: 10px;  
+      width: 80%;  
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #3367d6;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      word-break: break-word;
+      border-radius: 4px;
+    }
+    .error {
+      background-color: #ffebee;
+      color: #d32f2f;
+      border: 1px solid #ef9a9a;
+    }
+    .success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+    .loading {
+      color: #4285f4;
+    }
+    #copy-btn {
+      padding: 5px 10px;
+      margin-left: 10px;
+      width: auto;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <h2 style="color: #4285f4;">GOMOTV URL Shortener</h2>
-  <input type="text" id="longUrl" placeholder="Paste your GoMoTV link here (e.g. https://gomotv.pages.dev/...)">
-  <button onclick="shorten()">Shorten URL</button>
+  <input type="text" id="longUrl" placeholder="Paste your movie/TV show link here (include http:// or https://)">
+  <button id="shorten-btn">Shorten URL</button>
   <div id="result"></div>
+
   <script>
-  async function shorten() {
-  const longUrl = document.getElementById('longUrl').value.trim();
-  const resultDiv = document.getElementById('result');
-  const shortenBtn = document.getElementById('shorten-btn');
+    document.addEventListener('DOMContentLoaded', function () {
+      const shortenBtn = document.getElementById('shorten-btn');
+      const longUrlInput = document.getElementById('longUrl');
+      const resultDiv = document.getElementById('result');
 
-  resultDiv.innerHTML = '';
-  resultDiv.className = '';
+      shortenBtn.addEventListener('click', shorten);
+      longUrlInput.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          shorten();
+        }
+      });
 
-  if (!longUrl) {
-    resultDiv.innerHTML = '❌ Please enter a URL';
-    resultDiv.className = 'error';
-    return;
-  }
+      async function shorten() {
+        const longUrl = longUrlInput.value.trim();
+        resultDiv.innerHTML = '';
+        resultDiv.className = '';
 
-  if (!longUrl.startsWith('http://') && !longUrl.startsWith('https://')) {
-    resultDiv.innerHTML = '❌ URL must start with http:// or https://';
-    resultDiv.className = 'error';
-    return;
-  }
+        if (!longUrl) {
+          resultDiv.innerHTML = '❌ Please enter a URL';
+          resultDiv.className = 'error';
+          return;
+        }
 
-  try {
-    shortenBtn.disabled = true;
-    resultDiv.innerHTML = '⏳ Processing...';
-    resultDiv.className = 'loading';
+        if (!longUrl.startsWith('http://') && !longUrl.startsWith('https://')) {
+          resultDiv.innerHTML = '❌ URL must start with http:// or https://';
+          resultDiv.className = 'error';
+          return;
+        }
 
-    const res = await fetch('/.netlify/functions/shorten', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: longUrl })
-    });
+        try {
+          shortenBtn.disabled = true;
+          resultDiv.innerHTML = '⏳ Processing...';
+          resultDiv.className = 'loading';
 
-    const data = await res.json();
+          const res = await fetch('/.netlify/functions/shorten', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: longUrl })
+          });
 
-    if (!res.ok || !data.short) {
-      throw new Error(data.error || 'Failed to shorten URL');
-    }
+          const data = await res.json();
 
-    const shortUrl = window.location.origin + '/' + data.short;
+          if (!res.ok || !data.short) {
+            throw new Error(data.error || 'Failed to shorten URL');
+          }
 
-    resultDiv.innerHTML = `
-      <p>✅ Short URL created:</p>
-      <div style="margin: 15px 0;">
-        <a href="${shortUrl}" target="_blank" style="color: #4285f4; font-weight: bold;">${shortUrl}</a>
-        <button id="copy-btn" onclick="copyToClipboard('${shortUrl}')">Copy</button>
-      </div>
-      <small>This link will redirect to:<br>${longUrl}</small>
-    `;
-    resultDiv.className = 'success';
-  } catch (error) {
-    console.error('Shorten error:', error);
-    resultDiv.innerHTML = `❌ Error: ${error.message}`;
-    resultDiv.className = 'error';
-  } finally {
-    shortenBtn.disabled = false;
-  }
-  }
+          const shortUrl = window.location.origin + '/' + data.short;
+
+          resultDiv.innerHTML = `
+            <p>✅ Short URL created:</p>
+            <div style="margin: 15px 0;">
+              <a href="${shortUrl}" target="_blank" style="color: #4285f4; font-weight: bold;">${shortUrl}</a>
+              <button id="copy-btn">Copy</button>
+            </div>
+            <small>This link will redirect to:<br>${longUrl}</small>
+          `;
+          resultDiv.className = 'success';
+
+          // Attach copy event after element is added
+          const copyBtn = document.getElementById('copy-btn');
+          copyBtn.addEventListener('click', () => copyToClipboard(shortUrl));
+        } catch (error) {
+          console.error('Shorten error:', error);
+          resultDiv.innerHTML = `❌ Error: ${error.message}`;
+          resultDiv.className = 'error';
+        } finally {
+          shortenBtn.disabled = false;
+        }
+      }
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const copyBtn = document.getElementById('copy-btn');
+          if (copyBtn) {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+              copyBtn.textContent = 'Copy';
+            }, 2000);
+          }
+        }).catch(err => {
+          console.error('Copy failed:', err);
+          alert('Failed to copy. Please try again.');
+        });
+      }
+    });
   </script>
 </body>
 </html>
