@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <meta charset="UTF-8">
+  <title>GOMOTV URL Shortener</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:title" content="Watch on GoMoTV">
+  <meta property="og:description" content="Click to watch your favorite content">
+  <meta property="og:image" content="https://watch-gomotv.online/preview.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://watch-gomotv.online">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoMoTV">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Watch on GoMoTV">
+  <meta name="twitter:description" content="Click to watch your favorite content">
+  <meta name="twitter:image" content="https://watch-gomotv.online/preview.jpg">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; max-width: 500px; margin: 50px auto; padding: 20px; text-align: center; background-color: #f5f5f5; }
+    input, button { padding: 12px; margin: 10px; width: 80%; border: 1px solid #ddd; border-radius: 4px; font-size: 16px; }
+    button { background-color: #4285f4; color: white; font-weight: bold; cursor: pointer; transition: background-color 0.3s; }
+    button:hover { background-color: #3367d6; }
+    #result { margin-top: 20px; padding: 15px; word-break: break-all; border-radius: 4px; }
+    .error { background-color: #ffebee; color: #d32f2f; border: 1px solid #ef9a9a; }
+    .success { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  </style>
+</head>
+<body>
+  <h2 style="color: #4285f4;">GOMOTV URL Shortener</h2>
+  <input type="text" id="longUrl" placeholder="Paste your GoMoTV link here (e.g. https://gomotv.pages.dev/...)">
+  <button onclick="shorten()">Shorten URL</button>
+  <div id="result"></div>
+  <script>
+    async function shorten() {
+      const longUrl = document.getElementById('longUrl').value.trim();
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '';
+      resultDiv.className = '';
+      if (!longUrl.startsWith('https://gomotv.pages.dev/')) {
+        resultDiv.innerHTML = '❌ Only GoMoTV links are allowed.';
+        resultDiv.className = 'error';
+        return;
+      }
+      try {
+        const res = await fetch('/.netlify/functions/shorten', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: longUrl })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        const shortUrl = window.location.origin + '/' + data.short;
+        resultDiv.innerHTML = '<div class="success">✅ Short URL created: <a href="' + shortUrl + '" target="_blank">' + shortUrl + '</a></div>';
+      } catch (e) {
+        resultDiv.innerHTML = '❌ ' + e.message;
+        resultDiv.className = 'error';
+      }
+    }
+  </script>
+</body>
+</html>
