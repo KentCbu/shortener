@@ -4,7 +4,7 @@ const BIN_ID = "686e1231dfff172fa657ed90";
 const API_KEY = "$2a$10$hMAe7sa9n3owoAS9NYMjUeizXEKs5k8wuNljsyVfGUuBXLLF1lz0G";
 const DEFAULT_THUMBNAIL = "https://watch-gomotv.online/preview.jpg";
 const CACHE_TTL = 3600; // 1 hour cache
-const SAFE_REDIRECT_DOMAINS = ['gomotv.com', 'watch-gomotv.online']; // Add your allowed domains
+const SAFE_REDIRECT_DOMAINS = [];
 
 exports.handler = async function(event, context) {
   const slug = event.path.replace(/^\//, '').trim(); // Clean the slug
@@ -70,24 +70,6 @@ exports.handler = async function(event, context) {
           </body>
           </html>
         `
-      };
-    }
-
-    // Validate target URL domain for security
-    try {
-      const urlObj = new URL(targetUrl);
-      if (!SAFE_REDIRECT_DOMAINS.includes(urlObj.hostname)) {
-        console.warn(`Unsafe redirect attempt to: ${targetUrl}`);
-        return {
-          statusCode: 403,
-          body: 'Redirect to this domain is not allowed'
-        };
-      }
-    } catch (e) {
-      console.error('Invalid target URL:', targetUrl);
-      return {
-        statusCode: 500,
-        body: 'Invalid redirect URL configuration'
       };
     }
 
