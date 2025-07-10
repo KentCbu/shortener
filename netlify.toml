@@ -1,12 +1,12 @@
 [build]
-  command = "npm install"  # Optional: Kung may dependencies
-  publish = "."           # Gamitin ang root folder
+  command = "npm install"  # Optional (only if you have dependencies)
+  publish = "."           # Points to root folder
 
 [functions]
-  directory = "api"       # Netlify Functions folder
-  node_bundler = "esbuild"
+  directory = "api"       # Where Netlify looks for serverless functions
+  node_bundler = "esbuild"  # Bundler for JS functions
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  from = "/*"             # Redirect all paths
+  to = "/index.html"      # To your main HTML file
+  status = 200            # HTTP 200 (not 301/302)
