@@ -1,12 +1,22 @@
+# 🔧 Build Settings
 [build]
-  command = "npm install"  
-  publish = "."           
+  functions = "api"         # Where your serverless functions are
+  publish = "."             # Root folder is where index.html is located
 
-[functions]
-  directory = "api"       
-  node_bundler = "esbuild"  
-
+# 📁 Redirect Rules
 [[redirects]]
-  from = "/*"             
-  to = "/index.html"    
-  status = 200       
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Optional: Redirect short URLs (e.g. /abc123) to redirect function
+[[redirects]]
+  from = "/:slug"
+  to = "/.netlify/functions/redirect"
+  status = 200
+
+# ✅ Optional: Custom 404 Page (if you add one later)
+#[[redirects]]
+#  from = "/*"
+#  to = "/404.html"
+#  status = 404
