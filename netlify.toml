@@ -1,32 +1,21 @@
-# 🔧 Build Settings
 [build]
-  command = "npm install"   # Only needed if you have dependencies
-  functions = "api"         # Where your Netlify Functions live
-  publish = "public"        # Best practice to use a 'public' folder
+  functions = "api"    # Folder where your functions (redirect.js, shorten.js) are stored
+  publish = "public"   # Your static files (index.html, preview.jpg)
 
-# 🔄 Redirect Rules
+# Handle all 6-character hex paths (like abc123)
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-  force = true              # Ensures this takes precedence
-
-# 🎯 Short URL Handling
-[[redirects]]
-  from = "/:slug([a-f0-9]{6})"  # Only match 6-character hex slugs (e.g. abc123)
+  from = "/:slug([a-f0-9]{6})"
   to = "/.netlify/functions/redirect"
   status = 200
-  conditions = {Language = ["en"]}  # Optional: filter by language
 
-# 🚫 Block direct function access
+# API route for your frontend to call
 [[redirects]]
-  from = "/.netlify/functions/*"
-  to = "/404.html"
-  status = 404
-  force = true
+  from = "/api/shorten"
+  to = "/.netlify/functions/shorten"
+  status = 200
 
-# 📛 Custom 404 Page
+# Serve index.html for all other paths
 [[redirects]]
   from = "/*"
-  to = "/404.html"
-  status = 404
+  to = "/index.html"
+  status = 200
