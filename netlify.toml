@@ -1,21 +1,22 @@
+# 🔧 Build Settings
 [build]
-  functions = "api"    # Folder where your functions (redirect.js, shorten.js) are stored
-  publish = "public"   # Your static files (index.html, preview.jpg)
+  functions = "api"         # Where your serverless functions are
+  publish = "."             # Root folder is where index.html is located
 
-# Handle all 6-character hex paths (like abc123)
+# 📁 Redirect Rules
 [[redirects]]
-  from = "/:slug([a-f0-9]{6})"
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+# Optional: Redirect short URLs (e.g. /abc123) to redirect function
+[[redirects]]
+  from = "/:slug"
   to = "/.netlify/functions/redirect"
   status = 200
 
-# API route for your frontend to call
-[[redirects]]
-  from = "/api/shorten"
-  to = "/.netlify/functions/shorten"
-  status = 200
-
-# Serve index.html for all other paths
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+# ✅ Optional: Custom 404 Page (if you add one later)
+#[[redirects]]
+#  from = "/*"
+#  to = "/404.html"
+#  status = 404
